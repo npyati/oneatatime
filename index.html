@@ -483,10 +483,10 @@ function share(){
 
     var text = `one \u00B7 at \u00B7 a \u00B7 time \n
 solved in ${moves} moves ${hints_str}\n
-https://squaresga.me/oneatatime.html?given=${given}&target=${target}`;
+https://npyati.github.io/oneatatime/OK?given=${given}&target=${target}`;
     
     navigator.share({
-      title: 'one at a time',
+      //title: 'one at a time',
       text: text,
     })
 }
@@ -600,27 +600,34 @@ https://squaresga.me/oneatatime.html?given=${given}&target=${target}`;
             var sol = -1;
             const urlParams = new URLSearchParams(window.location.search);
 
-            // If either filter is enabled, ignore URL params to allow random generation
-            const useUrlParams = settings['perfect_fours'] == 0 && settings['par_seven_plus'] == 0;
+            // Check if URL params are present - they take priority over filter settings
+            const hasUrlParams = urlParams.get('given') && urlParams.get('target');
 
             while (sol == -1) {
-             //Grab parameters from URL if there, and if not randomly generates
-                given = ( useUrlParams && urlParams.get('given') ? urlParams.get('given') : list[Math.floor(Math.random() * list.length)]);
-                target = ( useUrlParams && urlParams.get('target')? urlParams.get('target') : list[Math.floor(Math.random() * list.length)]);
+             //Grab parameters from URL if there, otherwise randomly generate
+                if (hasUrlParams) {
+                    // Use URL params - ignore filter settings for shared puzzles
+                    given = urlParams.get('given');
+                    target = urlParams.get('target');
+                } else {
+                    // Generate random words
+                    given = list[Math.floor(Math.random() * list.length)];
+                    target = list[Math.floor(Math.random() * list.length)];
 
-                // Pre-filter for perfect_fours: check if all letters are different BEFORE solving
-                if (settings['perfect_fours'] == 1 && !all_letters_different(given, target)) {
-                    continue; // Skip this pair without solving
+                    // Pre-filter for perfect_fours: check if all letters are different BEFORE solving
+                    if (settings['perfect_fours'] == 1 && !all_letters_different(given, target)) {
+                        continue; // Skip this pair without solving
+                    }
                 }
 
-                // Determine max_par for early abort
-                const maxPar = settings['perfect_fours'] == 1 ? 4 : null;
+                // Determine max_par for early abort (only for filtered puzzles)
+                const maxPar = (!hasUrlParams && settings['perfect_fours'] == 1) ? 4 : null;
 
                 //Solve game with early abort if needed
                 sol = solve(given, target, sensitive, maxPar);
 
-                // Check filter criteria if enabled
-                if (sol != -1) {
+                // Check filter criteria only if NOT using URL params
+                if (sol != -1 && !hasUrlParams) {
                     const par = sol.length - 1;
 
                     // If perfect_fours is enabled, check if par is exactly 4
