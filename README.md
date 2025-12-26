@@ -2,7 +2,7 @@
 
 A word ladder puzzle game where you transform one word into another by changing **one letter at a time**.
 
-[Play Now](https://squaresga.me/oneatatime.html)
+[Play Now](https://npyati.github.io/oneatatime/)
 
 ## How to Play
 
